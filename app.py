@@ -59,6 +59,11 @@ class Expense(db.Model):
         default=date.today
     )
 
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('user.id'),
+        nullable=False
+    )
 
 class User(db.Model):
 
@@ -158,6 +163,10 @@ def index():
         request.args.get("Category") or ""
     ).strip()
 
+    search = (
+        request.args.get("search") or ""
+    ).strip()
+
     # CONVERT TO DATE
     start_date = parse_date_or_none(
         start_str
@@ -186,7 +195,9 @@ def index():
         end_str = ""
 
     # QUERY
-    q = Expense.query
+    q = Expense.query.filter_by(
+        user_id=session["user_id"]
+    )
 
     if start_date:
         q = q.filter(
@@ -202,11 +213,18 @@ def index():
         q = q.filter(
             Expense.Category == selected_category
         )
+    if search:
+        q = q.filter(
+            Expense.description.ilike(f"%{search}%")
+        )
 
     expenses = q.order_by(
         Expense.Date.desc(),
         Expense.id.desc()
     ).all()
+
+    recent_expenses = expenses[:5]
+    expense_count = len(expenses)
 
     # TOTAL
     total = round(
@@ -214,10 +232,25 @@ def index():
         2
     )
 
+    # MONTH TOTAL
+    current_month = date.today().month
+    current_year = date.today().year
+
+    month_total = round(
+        sum(
+            e.Amount
+            for e in expenses
+            if e.Date.month == current_month
+            and e.Date.year == current_year
+        ),2
+    )
+
     # PIE CHART
     cat_q = db.session.query(
         Expense.Category,
         func.sum(Expense.Amount)
+    ).filter(
+        Expense.user_id == session["user_id"]
     )
 
     if start_date:
@@ -252,6 +285,8 @@ def index():
     day_q = db.session.query(
         Expense.Date,
         func.sum(Expense.Amount)
+    ).filter(
+        Expense.user_id == session["user_id"]
     )
 
     if start_date:
@@ -288,6 +323,10 @@ def index():
     return render_template(
         "index.html",
 
+        expense_count=expense_count,
+
+        recent_expenses=recent_expenses,
+
         categories=CATEGORIES,
 
         today=date.today().isoformat(),
@@ -296,11 +335,15 @@ def index():
 
         total=total,
 
+        month_total=month_total,
+
         start_str=start_str,
 
         end_str=end_str,
 
         selected_category=selected_category,
+
+        search=search,
 
         cat_labels=cat_labels,
 
@@ -393,7 +436,8 @@ def add():
         description=description,
         Amount=Amount,
         Category=Category,
-        Date=d
+        Date=d,
+        user_id=session["user_id"]
     )
 
     db.session.add(e)
@@ -423,9 +467,9 @@ def delete(expense_id):
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    e = Expense.query.get_or_404(
-        expense_id
-    )
+    e = Expense.query.filter_by(
+        id=expense_id,
+        user_id=session["user_id"]).first_or_404()
 
     db.session.delete(e)
 
@@ -454,9 +498,9 @@ def edit(expense_id):
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    e = Expense.query.get_or_404(
-        expense_id
-    )
+    e = Expense.query.filter_by(
+        id=expense_id,
+        user_id=session["user_id"]).first_or_404()
 
     return render_template(
         "edit.html",
@@ -479,9 +523,9 @@ def edit_post(expense_id):
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    e = Expense.query.get_or_404(
-        expense_id
-    )
+    e = Expense.query.filter_by(
+        id=expense_id,
+        user_id=session["user_id"]).first_or_404()
 
     description = (
         request.form.get("description") or ""
@@ -603,7 +647,9 @@ def export_csv():
         end_str
     )
 
-    q = Expense.query
+    q = Expense.query.filter_by(
+        user_id=session["user_id"]
+    )
 
     if start_date:
         q = q.filter(
@@ -829,6 +875,35 @@ def signup():
         "signup.html"
     )
 
+
+# =========================
+# PROFILE
+# =========================
+
+@app.route("/profile")
+def profile():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user = User.query.get(session["user_id"])
+
+    total_expenses = db.session.query(
+        func.sum(Expense.Amount)
+    ).filter_by(
+        user_id=session["user_id"]
+    ).scalar() or 0
+
+    total_transactions = Expense.query.filter_by(
+        user_id=session["user_id"]
+    ).count()
+
+    return render_template(
+        "profile.html",
+        user=user,
+        total_expenses=total_expenses,
+        total_transactions=total_transactions
+    )
 
 # =========================
 # LOGOUT
