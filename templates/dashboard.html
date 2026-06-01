@@ -32,9 +32,12 @@
 <body class="bg-slate-950 text-slate-100 min-h-screen">
 
   <!-- NAVBAR -->
-  <nav class="border-b border-slate-800 bg-slate-900/70 backdrop-blur sticky top-0 z-50">
+<nav class="border-b border-slate-800 bg-slate-900/70 backdrop-blur sticky top-0 z-50">
 
-    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+  <div class="max-w-7xl mx-auto px-4 py-4">
+
+    <!-- TOP ROW -->
+    <div class="flex items-center justify-between">
 
       <div>
         <h1 class="text-2xl font-bold text-cyan-400">
@@ -46,85 +49,105 @@
         </p>
       </div>
 
-      <div class="flex items-center gap-3">
+      <!-- Desktop User Card -->
+      <div class="hidden md:flex items-center gap-3 bg-slate-800 px-4 py-2 rounded-2xl border border-slate-700">
 
-  <!-- USER CARD -->
-  <div class="hidden sm:flex items-center gap-3 bg-slate-800 px-4 py-2 rounded-2xl border border-slate-700">
+        <div class="w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center font-bold text-slate-950">
+          {{ session.username[0]|upper }}
+        </div>
 
-    <div class="w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center font-bold text-slate-950">
-      {{ session.username[0]|upper }}
+        <div>
+          <p class="text-sm font-semibold">
+            {{ session.username }}
+          </p>
+
+          <p class="text-xs text-slate-400">
+            Active Session
+          </p>
+        </div>
+
+      </div>
+
     </div>
 
-    <div>
-      <p class="text-sm font-semibold">
-        {{ session.username }}
-      </p>
+    <!-- MOBILE NAV -->
+    <div class="flex md:hidden flex-wrap gap-2 mt-4">
 
-      <p class="text-xs text-slate-400">
-        Active Session
-      </p>
+      <a
+        href="{{ url_for('profile') }}"
+        class="flex-1 text-center px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm">
+        Profile
+      </a>
+
+      <a
+        href="{{ url_for('dashboard') }}"
+        class="flex-1 text-center px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm">
+        Dashboard
+      </a>
+
+      <a
+        href="{{ url_for('expenses') }}"
+        class="flex-1 text-center px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm">
+        Expenses
+      </a>
+
+      <a
+        href="{{ url_for('charts') }}"
+        class="flex-1 text-center px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm">
+        Charts
+      </a>
+
+      <a
+        href="{{ url_for('logout') }}"
+        class="w-full text-center px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm">
+        Logout
+      </a>
+
+    </div>
+
+    <!-- DESKTOP NAV -->
+    <div class="hidden md:flex items-center justify-end gap-3 mt-4">
+
+      <div class="flex items-center px-4 py-2 rounded-xl bg-slate-800 border border-slate-700">
+        <span class="text-sm text-slate-300">
+          Expenses:
+        </span>
+
+        <span class="ml-2 font-bold text-cyan-400">
+          {{ expense_count }}
+        </span>
+      </div>
+
+      <a href="{{ url_for('profile') }}"
+        class="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 transition">
+        Profile
+      </a>
+
+      <a href="{{ url_for('dashboard') }}"
+        class="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 transition">
+        Dashboard
+      </a>
+
+      <a href="{{ url_for('expenses') }}"
+        class="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 transition">
+        Expenses
+      </a>
+
+      <a href="{{ url_for('charts') }}"
+        class="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 transition">
+        Charts
+      </a>
+
+      <a href="{{ url_for('logout') }}"
+        class="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 hover:bg-rose-500/20 transition">
+        Logout
+      </a>
+
     </div>
 
   </div>
 
-  <!-- EXPENSE COUNT -->
-<div class="hidden md:flex items-center px-4 py-2 rounded-xl bg-slate-800 border border-slate-700">
-
-  <span class="text-sm text-slate-300">
-    Expenses:
-  </span>
-
-  <span class="ml-2 font-bold text-cyan-400">
-    {{ expense_count }}
-  </span>
-
-</div>
-
-  <!-- PROFILE BUTTON -->
-  <a
-    href="{{ url_for('profile') }}"
-    class="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 transition"
-  >
-    Profile
-  </a>
-   <!-- NAV LINKS -->
-<a
-  href="{{ url_for('dashboard') }}"
-  class="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 transition"
->
-  Dashboard
-</a>
-
-<a
-  href="{{ url_for('expenses') }}"
-  class="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 transition"
->
-  Expenses
-</a>
-<a
-  href="{{ url_for('charts') }}"
-  class="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 transition"
->
-  Charts
-</a>
-
-
-
-  <!-- LOGOUT -->
-  <a
-    href="{{ url_for('logout') }}"
-    class="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 hover:bg-rose-500/20 transition"
-  >
-    Logout
-  </a>
-
-</div>
-
-    </div>
-
-  </nav>
-
-
+</nav>
   <!-- FLASH MESSAGES -->
   <div class="max-w-7xl mx-auto px-4 mt-4">
 
