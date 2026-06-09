@@ -1,3 +1,4 @@
+import re
 from flask import (
     Flask,
     render_template,
@@ -1026,6 +1027,19 @@ def signup():
         existing_user = User.query.filter_by(
             email=email
         ).first()
+        
+        gmail_pattern = r"^[A-Za-z0-9]+@gmail\.com$"
+
+        if not re.match(gmail_pattern, email):
+
+            flash(
+                "Enter a valid Gmail address",
+                "error"
+            )
+
+            return redirect(
+                url_for("signup")
+            )
 
         if existing_user:
 
@@ -1147,6 +1161,70 @@ def update_income():
 
     return redirect(
         url_for("profile")
+    )
+@app.route(
+    "/forgot-password",
+    methods=["GET", "POST"]
+)
+def forgot_password():
+
+    if request.method == "POST":
+
+        email = (
+            request.form.get("email") or ""
+        ).strip()
+
+        password = (
+            request.form.get("password") or ""
+        ).strip()
+
+        confirm_password = (
+            request.form.get("confirm_password") or ""
+        ).strip()
+
+        user = User.query.filter_by(
+            email=email
+        ).first()
+
+        if not user:
+
+            flash(
+                "Email not found",
+                "error"
+            )
+
+            return redirect(
+                url_for("forgot_password")
+            )
+
+        if password != confirm_password:
+
+            flash(
+                "Passwords do not match",
+                "error"
+            )
+
+            return redirect(
+                url_for("forgot_password")
+            )
+
+        user.password = generate_password_hash(
+            password
+        )
+
+        db.session.commit()
+
+        flash(
+            "Password updated successfully",
+            "success"
+        )
+
+        return redirect(
+            url_for("login")
+        )
+
+    return render_template(
+        "forgot_password.html"
     )
 
 # =========================
